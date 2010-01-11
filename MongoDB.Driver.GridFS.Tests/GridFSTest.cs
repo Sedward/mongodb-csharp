@@ -3,7 +3,6 @@
 using NUnit.Framework;
 
 using MongoDB.Driver;
-using MongoDB.Driver.GridFS;
 
 namespace MongoDB.Driver.GridFS
 {
@@ -28,6 +27,15 @@ namespace MongoDB.Driver.GridFS
             Assert.IsFalse(fs.Exists("non-existent filename"));
         }
         
+        [Test]
+        public void TestCopy(){
+            GridFile fs = new GridFile(db["tests"], "gfcopy");
+            GridFileStream gfs = fs.Create("original.txt");
+            fs.Copy("original.txt", "copy.txt");
+            Assert.IsTrue(fs.Exists("original.txt"));
+            Assert.IsTrue(fs.Exists("copy.txt"));
+            //TODO Assert chunk data is the same too.
+        }
         
         [TestFixtureSetUp]
         public void Init(){
@@ -42,6 +50,15 @@ namespace MongoDB.Driver.GridFS
         
         protected void CleanDB(){
             //Any collections that we might want to delete before the tests run should be done here.
+            DropGridFileSystem("gfcopy");
+        }
+        
+        protected void DropGridFileSystem(string filesystem){
+            try{
+                db["tests"].MetaData.DropCollection(filesystem + ".files");
+                db["tests"].MetaData.DropCollection(filesystem + ".chunks");
+            }catch(MongoCommandException){}//if it fails it is because the collection isn't there to start with.
+            
         }
     }
 }
