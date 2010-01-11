@@ -102,7 +102,41 @@ namespace MongoDB.Driver.GridFS
         public void Move(Object id, String dest){
             this.files.Update(new Document().Append("$set", new Document().Append("filename",dest)), new Document().Append("_id", id));
         }
-        #endregion      
+        #endregion
+
+
+        private void FlushWriteBuffer(byte[] buffer, )
+        {
+            List<Document> chunks = new List<Document>();
+            int chunkNumber = 0;
+            int offset = 0;
+            int lastSize = (int)buffer.Length % chunkSize;
+            double nthChunk = 0;
+            if (buffer.Length > chunkSize)
+            {
+                nthChunk = Math.Floor(buffer.Length / (double)chunkSize);
+                while (offset < buffer.Length)
+                {
+                    byte[] data = new byte[chunkSize];
+                    if (chunkNumber < nthChunk){
+                        Array.Copy(buffer, offset, data, 0, chunkSize);
+                    }
+                    else
+                    {
+                        Array.Copy(buffer, offset, data, 0, lastSize);
+                    }
+                    GridChunk gridChunk = new GridChunk(, chunkNumber, data);
+                    chunks.Add(gridChunk.ToDocument());
+                    offset += this.gridFileInfo.ChunkSize;
+                    chunkNumber++;
+                }
+            }
+            else
+            {
+                GridChunk gridChunk = new GridChunk(this.gridFileInfo.Id, 0, buffer);
+                chunks.Add(gridChunk.ToDocument());
+            }
+        }
     
     }
 

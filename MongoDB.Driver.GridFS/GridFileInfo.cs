@@ -15,9 +15,6 @@ namespace MongoDB.Driver.GridFS
         private const string DEFAULT_CONTENT_TYPE = "text/plain";
 
         private FileMode fileMode;
-        private BinaryReader binaryReader;
-        private FileStream fileStream;
-        private byte[] buffer;
         private bool disposed = false;
         private bool isOpen = false;
         
@@ -254,43 +251,7 @@ namespace MongoDB.Driver.GridFS
             }
         }
 
-        private void FlushWriteBuffer()
-        {
-            List<Document> chunks = new List<Document>();
-            int chunkNumber = 0;
-            int offset = 0;
-            int lastSize = (int)fileStream.Length % this.chunkSize;
-            double nthChunk = 0;
-            if (buffer.Length > this.chunkSize)
-            {
-                nthChunk = Math.Floor(buffer.Length / (double)this.chunkSize);
-                while (offset < fileStream.Length)
-                {
-                    byte[] data = new byte[this.chunkSize];
-                    if (chunkNumber < nthChunk)
-                    {
-                        data = binaryReader.ReadBytes(this.chunkSize);
-                        Array.Copy(buffer, offset, data, 0, chunkSize);
-                    }
-                    else
-                    {
-                        Array.Copy(buffer, offset, data, 0, lastSize);
-                    }
-                    GridChunk gridChunk = new GridChunk(this.id, chunkNumber, data);
-                    chunks.Add(gridChunk.ToDocument());
-                    offset += this.chunkSize;
-                    chunkNumber++;
-                }
-            }
-            else  {
-                GridChunk gridChunk = new GridChunk(id, 0, buffer);
-                chunks.Add(gridChunk.ToDocument());
-            }
-
-            this.gridFile.Chunks.Insert(chunks);
-            
-            
-        }
+        
         
         public Document ToDocument(){
             Document doc = new Document();
