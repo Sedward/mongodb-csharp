@@ -171,6 +171,7 @@ namespace MongoDB.Driver.GridFS
                 //Throw an exception?
             }
         }
+        
 
         /*
         public void Open(string filename)

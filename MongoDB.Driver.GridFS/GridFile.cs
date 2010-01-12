@@ -125,39 +125,46 @@ namespace MongoDB.Driver.GridFS
         }
         #endregion
 
-
-        private void FlushWriteBuffer(byte[] buffer, )
-        {
-            List<Document> chunks = new List<Document>();
-            int chunkNumber = 0;
-            int offset = 0;
-            int lastSize = (int)buffer.Length % chunkSize;
-            double nthChunk = 0;
-            if (buffer.Length > chunkSize)
-            {
-                nthChunk = Math.Floor(buffer.Length / (double)chunkSize);
-                while (offset < buffer.Length)
-                {
-                    byte[] data = new byte[chunkSize];
-                    if (chunkNumber < nthChunk){
-                        Array.Copy(buffer, offset, data, 0, chunkSize);
-                    }
-                    else
-                    {
-                        Array.Copy(buffer, offset, data, 0, lastSize);
-                    }
-                    GridChunk gridChunk = new GridChunk(, chunkNumber, data);
-                    chunks.Add(gridChunk.ToDocument());
-                    offset += this.gridFileInfo.ChunkSize;
-                    chunkNumber++;
-                }
-            }
-            else
-            {
-                GridChunk gridChunk = new GridChunk(this.gridFileInfo.Id, 0, buffer);
-                chunks.Add(gridChunk.ToDocument());
-            }
+        #region FileMD5
+        public String FileMD5(Object id, String filename){
+            Document doc = this.db.SendCommand(new Document().Append("filemd5",id).Append("root",filename));
+            return (String)doc["md5"];
         }
+        #endregion
+
+
+        //private void FlushWriteBuffer(byte[] buffer, )
+        //{
+        //    List<Document> chunks = new List<Document>();
+        //    int chunkNumber = 0;
+        //    int offset = 0;
+        //    int lastSize = (int)buffer.Length % chunkSize;
+        //    double nthChunk = 0;
+        //    if (buffer.Length > chunkSize)
+        //    {
+        //        nthChunk = Math.Floor(buffer.Length / (double)chunkSize);
+        //        while (offset < buffer.Length)
+        //        {
+        //            byte[] data = new byte[chunkSize];
+        //            if (chunkNumber < nthChunk){
+        //                Array.Copy(buffer, offset, data, 0, chunkSize);
+        //            }
+        //            else
+        //            {
+        //                Array.Copy(buffer, offset, data, 0, lastSize);
+        //            }
+        //            GridChunk gridChunk = new GridChunk(, chunkNumber, data);
+        //            chunks.Add(gridChunk.ToDocument());
+        //            offset += this.gridFileInfo.ChunkSize;
+        //            chunkNumber++;
+        //        }
+        //    }
+        //    else
+        //    {
+        //        GridChunk gridChunk = new GridChunk(this.gridFileInfo.Id, 0, buffer);
+        //        chunks.Add(gridChunk.ToDocument());
+        //    }
+        //}
         
     }
 
